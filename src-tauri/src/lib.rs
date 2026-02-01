@@ -12,6 +12,7 @@ mod managers;
 mod overlay;
 mod settings;
 mod shortcut;
+#[cfg(unix)]
 mod signal_handle;
 mod tray;
 mod tray_i18n;
