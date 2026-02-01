@@ -12,10 +12,12 @@ mod managers;
 mod overlay;
 mod settings;
 mod shortcut;
+#[cfg(unix)]
 mod signal_handle;
 mod tray;
 mod tray_i18n;
 mod utils;
+#[cfg(debug_assertions)]
 use specta_typescript::{BigIntExportBehavior, Typescript};
 use tauri_specta::{collect_commands, Builder};
 
@@ -332,6 +334,7 @@ pub fn run() {
         )
         .expect("Failed to export typescript bindings");
 
+    #[allow(unused_mut)]
     let mut builder = tauri::Builder::default().plugin(
         LogBuilder::new()
             .level(log::LevelFilter::Trace) // Set to most verbose level globally
