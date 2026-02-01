@@ -1,9 +1,9 @@
 use crate::settings::PostProcessProvider;
+use hound::{WavSpec, WavWriter};
 use log::debug;
 use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION, CONTENT_TYPE, REFERER, USER_AGENT};
 use serde::{Deserialize, Serialize};
 use std::io::Cursor;
-use hound::{WavSpec, WavWriter};
 
 #[derive(Debug, Serialize)]
 struct ChatMessage {
@@ -200,7 +200,9 @@ pub async fn transcribe_cloud(
     audio_samples: Vec<f32>,
 ) -> Result<String, String> {
     if api_key.is_empty() {
-        return Err("OpenAI API key is missing. Please add it in the Advanced settings.".to_string());
+        return Err(
+            "OpenAI API key is missing. Please add it in the Advanced settings.".to_string(),
+        );
     }
 
     let url = format!("{}/audio/transcriptions", base_url.trim_end_matches('/'));
@@ -220,17 +222,26 @@ pub async fn transcribe_cloud(
             .map_err(|e| format!("Failed to create WAV writer: {}", e))?;
         for sample in audio_samples {
             let sample_i16 = (sample * i16::MAX as f32) as i16;
-            writer.write_sample(sample_i16)
+            writer
+                .write_sample(sample_i16)
                 .map_err(|e| format!("Failed to write WAV sample: {}", e))?;
         }
-        writer.finalize().map_err(|e| format!("Failed to finalize WAV file: {}", e))?;
+        writer
+            .finalize()
+            .map_err(|e| format!("Failed to finalize WAV file: {}", e))?;
     }
 
     let wav_bytes = wav_buffer.into_inner();
 
     let client = reqwest::Client::new();
     let form = reqwest::multipart::Form::new()
-        .part("file", reqwest::multipart::Part::bytes(wav_bytes).file_name("audio.wav").mime_str("audio/wav").map_err(|e| e.to_string())?)
+        .part(
+            "file",
+            reqwest::multipart::Part::bytes(wav_bytes)
+                .file_name("audio.wav")
+                .mime_str("audio/wav")
+                .map_err(|e| e.to_string())?,
+        )
         .text("model", model.to_string());
 
     let response = client
@@ -257,7 +268,10 @@ pub async fn transcribe_cloud(
             }
         }
 
-        return Err(format!("Cloud transcription failed ({}): {}", status, error_text));
+        return Err(format!(
+            "Cloud transcription failed ({}): {}",
+            status, error_text
+        ));
     }
 
     #[derive(Deserialize)]

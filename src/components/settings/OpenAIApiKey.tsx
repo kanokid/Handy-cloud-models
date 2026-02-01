@@ -15,7 +15,9 @@ export const OpenAIApiKey: React.FC<OpenAIApiKeyProps> = ({
 }) => {
   const { t } = useTranslation();
   const { settings, updateSetting, isUpdating } = useSettings();
-  const [localValue, setLocalValue] = React.useState(settings?.openai_api_key || "");
+  const [localValue, setLocalValue] = React.useState(
+    settings?.openai_api_key || "",
+  );
 
   React.useEffect(() => {
     setLocalValue(settings?.openai_api_key || "");

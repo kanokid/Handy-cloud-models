@@ -15,7 +15,9 @@ export const OpenAIBaseUrl: React.FC<OpenAIBaseUrlProps> = ({
 }) => {
   const { t } = useTranslation();
   const { settings, updateSetting, isUpdating } = useSettings();
-  const [localValue, setLocalValue] = React.useState(settings?.openai_base_url || "");
+  const [localValue, setLocalValue] = React.useState(
+    settings?.openai_base_url || "",
+  );
 
   React.useEffect(() => {
     setLocalValue(settings?.openai_base_url || "");

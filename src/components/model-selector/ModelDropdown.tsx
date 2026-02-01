@@ -36,9 +36,16 @@ const ModelDropdown: React.FC<ModelDropdownProps> = ({
 }) => {
   const { t } = useTranslation();
   const cloudModels = models.filter((m) => m.engine_type === "Cloud");
-  const availableModels = models.filter((m) => m.is_downloaded && m.engine_type !== "Cloud");
-  const downloadableModels = models.filter((m) => !m.is_downloaded && m.engine_type !== "Cloud");
-  const isFirstRun = availableModels.length === 0 && cloudModels.length === 0 && models.length > 0;
+  const availableModels = models.filter(
+    (m) => m.is_downloaded && m.engine_type !== "Cloud",
+  );
+  const downloadableModels = models.filter(
+    (m) => !m.is_downloaded && m.engine_type !== "Cloud",
+  );
+  const isFirstRun =
+    availableModels.length === 0 &&
+    cloudModels.length === 0 &&
+    models.length > 0;
 
   const handleDeleteClick = async (e: React.MouseEvent, modelId: string) => {
     e.preventDefault();
@@ -126,7 +133,11 @@ const ModelDropdown: React.FC<ModelDropdownProps> = ({
 
       {/* Available Models */}
       {availableModels.length > 0 && (
-        <div className={cloudModels.length > 0 ? "border-t border-mid-gray/10" : ""}>
+        <div
+          className={
+            cloudModels.length > 0 ? "border-t border-mid-gray/10" : ""
+          }
+        >
           <div className="px-3 py-1 text-xs font-medium text-text/80 border-b border-mid-gray/10">
             {t("modelSelector.availableModels")}
           </div>

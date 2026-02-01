@@ -391,7 +391,8 @@ impl TranscriptionManager {
 
                 let result_text = tauri::async_runtime::block_on(async {
                     crate::llm_client::transcribe_cloud(&api_key, &base_url, &model_id, audio).await
-                }).map_err(|e| {
+                })
+                .map_err(|e| {
                     let _ = self.app_handle.emit("transcription-error", e.clone());
                     anyhow::anyhow!(e)
                 })?;
