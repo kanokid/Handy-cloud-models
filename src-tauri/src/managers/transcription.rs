@@ -293,6 +293,7 @@ impl TranscriptionManager {
                     })?;
                 LoadedEngine::Moonshine(engine)
             }
+            EngineType::Cloud => unreachable!("Cloud models should not be loaded locally"),
         };
 
         // Update the current engine and model ID
