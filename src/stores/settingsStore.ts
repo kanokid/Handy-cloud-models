@@ -127,6 +127,10 @@ const settingUpdaters: {
   app_language: (value) => commands.changeAppLanguageSetting(value as string),
   experimental_enabled: (value) =>
     commands.changeExperimentalEnabledSetting(value as boolean),
+  openai_api_key: (value) =>
+    commands.changeOpenaiApiKeySetting(value as string),
+  openai_base_url: (value) =>
+    commands.changeOpenaiBaseUrlSetting(value as string),
 };
 
 export const useSettingsStore = create<SettingsStore>()(

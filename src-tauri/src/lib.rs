@@ -270,6 +270,8 @@ pub fn run() {
         shortcut::change_app_language_setting,
         shortcut::change_update_checks_setting,
         shortcut::change_keyboard_implementation_setting,
+        shortcut::change_openai_api_key_setting,
+        shortcut::change_openai_base_url_setting,
         shortcut::get_keyboard_implementation,
         shortcut::handy_keys::start_handy_keys_recording,
         shortcut::handy_keys::stop_handy_keys_recording,

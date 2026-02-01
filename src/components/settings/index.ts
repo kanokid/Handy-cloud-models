@@ -29,3 +29,5 @@ export { HistoryLimit } from "./HistoryLimit";
 export { RecordingRetentionPeriodSelector } from "./RecordingRetentionPeriod";
 export { AutostartToggle } from "./AutostartToggle";
 export { UpdateChecksToggle } from "./UpdateChecksToggle";
+export { OpenAIApiKey } from "./OpenAIApiKey";
+export { OpenAIBaseUrl } from "./OpenAIBaseUrl";

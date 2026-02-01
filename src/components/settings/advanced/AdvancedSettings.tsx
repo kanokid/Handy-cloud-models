@@ -15,6 +15,8 @@ import { AppendTrailingSpace } from "../AppendTrailingSpace";
 import { HistoryLimit } from "../HistoryLimit";
 import { RecordingRetentionPeriodSelector } from "../RecordingRetentionPeriod";
 import { ExperimentalToggle } from "../ExperimentalToggle";
+import { OpenAIApiKey } from "../OpenAIApiKey";
+import { OpenAIBaseUrl } from "../OpenAIBaseUrl";
 import { useSettings } from "../../../hooks/useSettings";
 import { KeyboardImplementationSelector } from "../debug/KeyboardImplementationSelector";
 
@@ -60,6 +62,8 @@ export const AdvancedSettings: React.FC = () => {
 
       {experimentalEnabled && (
         <SettingsGroup title={t("settings.advanced.groups.experimental")}>
+          <OpenAIApiKey descriptionMode="tooltip" grouped={true} />
+          <OpenAIBaseUrl descriptionMode="tooltip" grouped={true} />
           <PostProcessingToggle descriptionMode="tooltip" grouped={true} />
           <KeyboardImplementationSelector
             descriptionMode="tooltip"

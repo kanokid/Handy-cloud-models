@@ -206,6 +206,15 @@ impl TranscriptionManager {
             .get_model_info(model_id)
             .ok_or_else(|| anyhow::anyhow!("Model not found: {}", model_id))?;
 
+        if matches!(model_info.engine_type, EngineType::Cloud) {
+            debug!("Skipping local load for cloud model: {}", model_id);
+            {
+                let mut current_model = self.current_model_id.lock().unwrap();
+                *current_model = Some(model_id.to_string());
+            }
+            return Ok(());
+        }
+
         if !model_info.is_downloaded {
             let error_msg = "Model not downloaded";
             let _ = self.app_handle.emit(
@@ -318,6 +327,15 @@ impl TranscriptionManager {
 
     /// Kicks off the model loading in a background thread if it's not already loaded
     pub fn initiate_model_load(&self) {
+        let settings = get_settings(&self.app_handle);
+        if let Some(model_info) = self.model_manager.get_model_info(&settings.selected_model) {
+            if matches!(model_info.engine_type, EngineType::Cloud) {
+                let mut current_model = self.current_model_id.lock().unwrap();
+                *current_model = Some(settings.selected_model.clone());
+                return;
+            }
+        }
+
         let mut is_loading = self.is_loading.lock().unwrap();
         if *is_loading || self.is_model_loaded() {
             return;
@@ -361,6 +379,27 @@ impl TranscriptionManager {
             return Ok(String::new());
         }
 
+        // Get current settings for configuration
+        let settings = get_settings(&self.app_handle);
+
+        // Check if we should use cloud transcription
+        if let Some(model_info) = self.model_manager.get_model_info(&settings.selected_model) {
+            if matches!(model_info.engine_type, EngineType::Cloud) {
+                let api_key = settings.openai_api_key.clone();
+                let base_url = settings.openai_base_url.clone();
+                let model_id = settings.selected_model.clone();
+
+                let result_text = tauri::async_runtime::block_on(async {
+                    crate::llm_client::transcribe_cloud(&api_key, &base_url, &model_id, audio).await
+                }).map_err(|e| {
+                    let _ = self.app_handle.emit("transcription-error", e.clone());
+                    anyhow::anyhow!(e)
+                })?;
+
+                return Ok(result_text);
+            }
+        }
+
         // Check if model is loaded, if not try to load it
         {
             // If the model is loading, wait for it to complete.
@@ -374,9 +413,6 @@ impl TranscriptionManager {
                 return Err(anyhow::anyhow!("Model is not loaded for transcription."));
             }
         }
-
-        // Get current settings for configuration
-        let settings = get_settings(&self.app_handle);
 
         // Perform transcription with the appropriate engine
         let result = {
