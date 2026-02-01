@@ -2,6 +2,8 @@ use crate::settings::PostProcessProvider;
 use log::debug;
 use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION, CONTENT_TYPE, REFERER, USER_AGENT};
 use serde::{Deserialize, Serialize};
+use std::io::Cursor;
+use hound::{WavSpec, WavWriter};
 
 #[derive(Debug, Serialize)]
 struct ChatMessage {
@@ -188,4 +190,85 @@ pub async fn fetch_models(
     }
 
     Ok(models)
+}
+
+/// Transcribe audio using OpenAI's transcription API
+pub async fn transcribe_cloud(
+    api_key: &str,
+    base_url: &str,
+    model: &str,
+    audio_samples: Vec<f32>,
+) -> Result<String, String> {
+    if api_key.is_empty() {
+        return Err("OpenAI API key is missing. Please add it in the Advanced settings.".to_string());
+    }
+
+    let url = format!("{}/audio/transcriptions", base_url.trim_end_matches('/'));
+    debug!("Sending cloud transcription request to: {}", url);
+
+    // Convert f32 samples to WAV bytes in memory
+    let spec = WavSpec {
+        channels: 1,
+        sample_rate: 16000,
+        bits_per_sample: 16,
+        sample_format: hound::SampleFormat::Int,
+    };
+
+    let mut wav_buffer = Cursor::new(Vec::new());
+    {
+        let mut writer = WavWriter::new(&mut wav_buffer, spec)
+            .map_err(|e| format!("Failed to create WAV writer: {}", e))?;
+        for sample in audio_samples {
+            let sample_i16 = (sample * i16::MAX as f32) as i16;
+            writer.write_sample(sample_i16)
+                .map_err(|e| format!("Failed to write WAV sample: {}", e))?;
+        }
+        writer.finalize().map_err(|e| format!("Failed to finalize WAV file: {}", e))?;
+    }
+
+    let wav_bytes = wav_buffer.into_inner();
+
+    let client = reqwest::Client::new();
+    let form = reqwest::multipart::Form::new()
+        .part("file", reqwest::multipart::Part::bytes(wav_bytes).file_name("audio.wav").mime_str("audio/wav").map_err(|e| e.to_string())?)
+        .text("model", model.to_string());
+
+    let response = client
+        .post(&url)
+        .header(AUTHORIZATION, format!("Bearer {}", api_key))
+        .multipart(form)
+        .send()
+        .await
+        .map_err(|e| format!("Cloud transcription request failed: {}", e))?;
+
+    let status = response.status();
+    if !status.is_success() {
+        let error_text = response
+            .text()
+            .await
+            .unwrap_or_else(|_| "Failed to read error response".to_string());
+
+        // Try to parse OpenAI error message
+        if let Ok(error_json) = serde_json::from_str::<serde_json::Value>(&error_text) {
+            if let Some(error) = error_json.get("error") {
+                if let Some(message) = error.get("message").and_then(|m| m.as_str()) {
+                    return Err(format!("OpenAI API Error: {}", message));
+                }
+            }
+        }
+
+        return Err(format!("Cloud transcription failed ({}): {}", status, error_text));
+    }
+
+    #[derive(Deserialize)]
+    struct TranscriptionResponse {
+        text: String,
+    }
+
+    let result: TranscriptionResponse = response
+        .json()
+        .await
+        .map_err(|e| format!("Failed to parse cloud transcription response: {}", e))?;
+
+    Ok(result.text)
 }

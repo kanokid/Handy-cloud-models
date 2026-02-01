@@ -82,6 +82,7 @@
     "welcome": "Welcome to Handy!",
     "downloadPrompt": "Download a model below to get started with transcription.",
     "availableModels": "Available Models",
+    "cloudModels": "Cloud Models",
     "downloadModels": "Download Models",
     "chooseModel": "Choose a Model",
     "active": "Active",
@@ -237,6 +238,14 @@
         "placeholder": "Add a word",
         "add": "Add",
         "remove": "Remove {{word}}"
+      },
+      "openai_api_key": {
+        "label": "OpenAI API Key",
+        "description": "Required for cloud transcription models."
+      },
+      "openai_base_url": {
+        "label": "OpenAI Base URL",
+        "description": "Base URL for the OpenAI-compatible transcription API."
       }
     },
     "postProcessing": {

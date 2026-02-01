@@ -315,6 +315,14 @@ pub struct AppSettings {
     pub experimental_enabled: bool,
     #[serde(default)]
     pub keyboard_implementation: KeyboardImplementation,
+    #[serde(default = "default_openai_base_url")]
+    pub openai_base_url: String,
+    #[serde(default)]
+    pub openai_api_key: String,
+}
+
+fn default_openai_base_url() -> String {
+    "https://api.openai.com/v1".to_string()
 }
 
 fn default_model() -> String {
@@ -605,6 +613,8 @@ pub fn get_default_settings() -> AppSettings {
         app_language: default_app_language(),
         experimental_enabled: false,
         keyboard_implementation: KeyboardImplementation::default(),
+        openai_base_url: default_openai_base_url(),
+        openai_api_key: "".to_string(),
     }
 }
 

@@ -35,9 +35,10 @@ const ModelDropdown: React.FC<ModelDropdownProps> = ({
   onError,
 }) => {
   const { t } = useTranslation();
-  const availableModels = models.filter((m) => m.is_downloaded);
-  const downloadableModels = models.filter((m) => !m.is_downloaded);
-  const isFirstRun = availableModels.length === 0 && models.length > 0;
+  const cloudModels = models.filter((m) => m.engine_type === "Cloud");
+  const availableModels = models.filter((m) => m.is_downloaded && m.engine_type !== "Cloud");
+  const downloadableModels = models.filter((m) => !m.is_downloaded && m.engine_type !== "Cloud");
+  const isFirstRun = availableModels.length === 0 && cloudModels.length === 0 && models.length > 0;
 
   const handleDeleteClick = async (e: React.MouseEvent, modelId: string) => {
     e.preventDefault();
@@ -79,9 +80,53 @@ const ModelDropdown: React.FC<ModelDropdownProps> = ({
         </div>
       )}
 
+      {/* Cloud Models */}
+      {cloudModels.length > 0 && (
+        <div>
+          <div className="px-3 py-1 text-xs font-medium text-text/80 border-b border-mid-gray/10">
+            {t("modelSelector.cloudModels")}
+          </div>
+          {cloudModels.map((model) => (
+            <div
+              key={model.id}
+              onClick={() => handleModelClick(model.id)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  handleModelClick(model.id);
+                }
+              }}
+              tabIndex={0}
+              role="button"
+              className={`w-full px-3 py-2 text-left hover:bg-mid-gray/10 transition-colors cursor-pointer focus:outline-none ${
+                currentModelId === model.id
+                  ? "bg-logo-primary/10 text-logo-primary"
+                  : ""
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-sm">
+                    {getTranslatedModelName(model, t)}
+                  </div>
+                  <div className="text-xs text-text/40 italic pr-4">
+                    {getTranslatedModelDescription(model, t)}
+                  </div>
+                </div>
+                {currentModelId === model.id && (
+                  <div className="text-xs text-logo-primary">
+                    {t("modelSelector.active")}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Available Models */}
       {availableModels.length > 0 && (
-        <div>
+        <div className={cloudModels.length > 0 ? "border-t border-mid-gray/10" : ""}>
           <div className="px-3 py-1 text-xs font-medium text-text/80 border-b border-mid-gray/10">
             {t("modelSelector.availableModels")}
           </div>
@@ -226,11 +271,13 @@ const ModelDropdown: React.FC<ModelDropdownProps> = ({
       )}
 
       {/* No Models Available */}
-      {availableModels.length === 0 && downloadableModels.length === 0 && (
-        <div className="px-3 py-2 text-sm text-text/60">
-          {t("modelSelector.noModelsAvailable")}
-        </div>
-      )}
+      {availableModels.length === 0 &&
+        downloadableModels.length === 0 &&
+        cloudModels.length === 0 && (
+          <div className="px-3 py-2 text-sm text-text/60">
+            {t("modelSelector.noModelsAvailable")}
+          </div>
+        )}
     </div>
   );
 };

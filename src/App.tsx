@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { Toaster } from "sonner";
+import { Toaster, toast } from "sonner";
 import "./App.css";
 import AccessibilityPermissions from "./components/AccessibilityPermissions";
 import Footer from "./components/footer";
@@ -7,6 +7,7 @@ import Onboarding, { AccessibilityOnboarding } from "./components/onboarding";
 import { Sidebar, SidebarSection, SECTIONS_CONFIG } from "./components/Sidebar";
 import { useSettings } from "./hooks/useSettings";
 import { useSettingsStore } from "./stores/settingsStore";
+import { listen } from "@tauri-apps/api/event";
 import { commands } from "@/bindings";
 
 type OnboardingStep = "accessibility" | "model" | "done";
@@ -47,6 +48,19 @@ function App() {
       refreshOutputDevices();
     }
   }, [onboardingStep, refreshAudioDevices, refreshOutputDevices]);
+
+  // Listen for transcription errors
+  useEffect(() => {
+    const unlisten = listen<string>("transcription-error", (event) => {
+      toast.error("Transcription Error", {
+        description: event.payload,
+      });
+    });
+
+    return () => {
+      unlisten.then((fn) => fn());
+    };
+  }, []);
 
   // Handle keyboard shortcuts for debug mode toggle
   useEffect(() => {

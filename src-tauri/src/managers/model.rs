@@ -19,6 +19,7 @@ pub enum EngineType {
     Whisper,
     Parakeet,
     Moonshine,
+    Cloud,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
@@ -199,6 +200,64 @@ impl ModelManager {
                 is_directory: true,
                 engine_type: EngineType::Moonshine,
                 accuracy_score: 0.70,
+                speed_score: 0.90,
+            },
+        );
+
+        // Add Cloud models
+        available_models.insert(
+            "gpt-4o-mini-transcribe".to_string(),
+            ModelInfo {
+                id: "gpt-4o-mini-transcribe".to_string(),
+                name: "GPT-4o Mini".to_string(),
+                description: "Fast and very affordable cloud transcription.".to_string(),
+                filename: "".to_string(),
+                url: None,
+                size_mb: 0,
+                is_downloaded: true, // Cloud models are always "downloaded"
+                is_downloading: false,
+                partial_size: 0,
+                is_directory: false,
+                engine_type: EngineType::Cloud,
+                accuracy_score: 0.90,
+                speed_score: 0.95,
+            },
+        );
+
+        available_models.insert(
+            "gpt-4o-transcribe".to_string(),
+            ModelInfo {
+                id: "gpt-4o-transcribe".to_string(),
+                name: "GPT-4o".to_string(),
+                description: "Most accurate cloud transcription.".to_string(),
+                filename: "".to_string(),
+                url: None,
+                size_mb: 0,
+                is_downloaded: true,
+                is_downloading: false,
+                partial_size: 0,
+                is_directory: false,
+                engine_type: EngineType::Cloud,
+                accuracy_score: 0.95,
+                speed_score: 0.90,
+            },
+        );
+
+        available_models.insert(
+            "whisper-large-v3-turbo".to_string(),
+            ModelInfo {
+                id: "whisper-large-v3-turbo".to_string(),
+                name: "Whisper Large V3 Turbo".to_string(),
+                description: "OpenAI's latest Whisper model in the cloud.".to_string(),
+                filename: "".to_string(),
+                url: None,
+                size_mb: 0,
+                is_downloaded: true,
+                is_downloading: false,
+                partial_size: 0,
+                is_directory: false,
+                engine_type: EngineType::Cloud,
+                accuracy_score: 0.90,
                 speed_score: 0.90,
             },
         );
