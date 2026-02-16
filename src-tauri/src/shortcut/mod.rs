@@ -24,6 +24,7 @@ use crate::settings::{
     PasteMethod, ShortcutBinding, SoundTheme, APPLE_INTELLIGENCE_PROVIDER_ID,
 };
 #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
+#[cfg(all(target_os = "macos", target_arch = "aarch64"))]
 use crate::settings::APPLE_INTELLIGENCE_DEFAULT_MODEL_ID;
 use crate::tray;
 
@@ -97,9 +98,9 @@ pub fn unregister_shortcut(app: &AppHandle, binding: ShortcutBinding) -> Result<
 
 #[derive(Serialize, Type)]
 pub struct BindingResponse {
-    success: bool,
-    binding: Option<ShortcutBinding>,
-    error: Option<String>,
+    pub success: bool,
+    pub binding: Option<ShortcutBinding>,
+    pub error: Option<String>,
 }
 
 #[tauri::command]

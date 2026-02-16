@@ -52,6 +52,11 @@ export const AdvancedSettings: React.FC = () => {
         <AppendTrailingSpace descriptionMode="tooltip" grouped={true} />
       </SettingsGroup>
 
+      <SettingsGroup title={t("settings.advanced.groups.cloud")}>
+        <OpenAIApiKey descriptionMode="tooltip" grouped={true} />
+        <OpenAIBaseUrl descriptionMode="tooltip" grouped={true} />
+      </SettingsGroup>
+
       <SettingsGroup title={t("settings.advanced.groups.history")}>
         <HistoryLimit descriptionMode="tooltip" grouped={true} />
         <RecordingRetentionPeriodSelector
@@ -62,8 +67,6 @@ export const AdvancedSettings: React.FC = () => {
 
       {experimentalEnabled && (
         <SettingsGroup title={t("settings.advanced.groups.experimental")}>
-          <OpenAIApiKey descriptionMode="tooltip" grouped={true} />
-          <OpenAIBaseUrl descriptionMode="tooltip" grouped={true} />
           <PostProcessingToggle descriptionMode="tooltip" grouped={true} />
           <KeyboardImplementationSelector
             descriptionMode="tooltip"

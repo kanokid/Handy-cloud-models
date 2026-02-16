@@ -9,7 +9,6 @@ use tauri::{AppHandle, Manager};
 use signal_hook::consts::SIGUSR2;
 use signal_hook::iterator::Signals;
 
-#[cfg(unix)]
 pub fn setup_signal_handler(app_handle: AppHandle, mut signals: Signals) {
     let app_handle_for_signal = app_handle.clone();
 

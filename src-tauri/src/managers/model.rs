@@ -244,6 +244,25 @@ impl ModelManager {
         );
 
         available_models.insert(
+            "whisper-1".to_string(),
+            ModelInfo {
+                id: "whisper-1".to_string(),
+                name: "Whisper 1".to_string(),
+                description: "Standard OpenAI Cloud Whisper model.".to_string(),
+                filename: "".to_string(),
+                url: None,
+                size_mb: 0,
+                is_downloaded: true,
+                is_downloading: false,
+                partial_size: 0,
+                is_directory: false,
+                engine_type: EngineType::Cloud,
+                accuracy_score: 0.90,
+                speed_score: 0.90,
+            },
+        );
+
+        available_models.insert(
             "whisper-large-v3-turbo".to_string(),
             ModelInfo {
                 id: "whisper-large-v3-turbo".to_string(),
@@ -743,9 +762,7 @@ impl ModelManager {
         }
 
         let model_path = self.models_dir.join(&model_info.filename);
-        let partial_path = self
-            .models_dir
-            .join(format!("{}.partial", &model_info.filename));
+        let partial_path = self.models_dir.join(format!("{}.partial", &model_info.filename));
 
         if model_info.is_directory {
             // For directory-based models, ensure the directory exists and is complete

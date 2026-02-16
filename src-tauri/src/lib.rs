@@ -140,10 +140,11 @@ fn initialize_core_logic(app_handle: &AppHandle) {
     shortcut::init_shortcuts(app_handle);
 
     #[cfg(unix)]
-    let signals = Signals::new(&[SIGUSR2]).unwrap();
-    // Set up SIGUSR2 signal handler for toggling transcription
-    #[cfg(unix)]
-    signal_handle::setup_signal_handler(app_handle.clone(), signals);
+    {
+        let signals = Signals::new(&[SIGUSR2]).unwrap();
+        // Set up SIGUSR2 signal handler for toggling transcription
+        signal_handle::setup_signal_handler(app_handle.clone(), signals);
+    }
 
     // Apply macOS Accessory policy if starting hidden
     #[cfg(target_os = "macos")]
@@ -379,8 +380,8 @@ pub fn run() {
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(tauri_plugin_autostart::init(
             MacosLauncher::LaunchAgent,
-            Some(vec![]),
-        ))
+            Some(vec![])),
+        )
         .manage(Mutex::new(ShortcutToggleStates::default()))
         .setup(move |app| {
             let settings = get_settings(&app.handle());
