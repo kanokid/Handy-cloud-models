@@ -106,7 +106,7 @@ pub enum RecordingState {
     Recording { binding_id: String },
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum MicrophoneMode {
     AlwaysOn,
     OnDemand,
@@ -309,24 +309,32 @@ impl AudioRecordingManager {
     /* ---------- mode switching --------------------------------------------- */
 
     pub fn update_mode(&self, new_mode: MicrophoneMode) -> Result<(), anyhow::Error> {
-        let mode_guard = self.mode.lock().unwrap();
+        let mut mode_guard = self.mode.lock().unwrap();
         let cur_mode = mode_guard.clone();
+
+        if cur_mode == new_mode {
+            return Ok(());
+        }
 
         match (cur_mode, &new_mode) {
             (MicrophoneMode::AlwaysOn, MicrophoneMode::OnDemand) => {
                 if matches!(*self.state.lock().unwrap(), RecordingState::Idle) {
+                    *mode_guard = new_mode;
                     drop(mode_guard);
                     self.stop_microphone_stream();
+                    return Ok(());
                 }
             }
             (MicrophoneMode::OnDemand, MicrophoneMode::AlwaysOn) => {
+                *mode_guard = new_mode;
                 drop(mode_guard);
                 self.start_microphone_stream()?;
+                return Ok(());
             }
             _ => {}
         }
 
-        *self.mode.lock().unwrap() = new_mode;
+        *mode_guard = new_mode;
         Ok(())
     }
 

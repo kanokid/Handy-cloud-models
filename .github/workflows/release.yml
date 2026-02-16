@@ -30,6 +30,9 @@ jobs:
       - name: install dependencies
         run: bun install
 
+      - name: Install trusted-signing-cli
+        run: cargo install trusted-signing-cli
+
       - name: Get version from tauri.conf.json
         id: get-version
         shell: bash
