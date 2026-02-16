@@ -395,7 +395,7 @@ impl TranscriptionManager {
                 })
                 .map_err(|e| {
                     let _ = self.app_handle.emit("transcription-error", e.clone());
-                    anyhow::anyhow!(e)
+                    anyhow::anyhow!("{}", e)
                 })?;
 
                 return Ok(result_text);
@@ -450,7 +450,7 @@ impl TranscriptionManager {
 
                     whisper_engine
                         .transcribe_samples(audio, Some(params))
-                        .map_err(|e| anyhow::anyhow!("Whisper transcription failed: {}", e))?
+                        .map_err(|e| anyhow::anyhow!("{}", e))?
                 }
                 LoadedEngine::Parakeet(parakeet_engine) => {
                     let params = ParakeetInferenceParams {
@@ -459,11 +459,11 @@ impl TranscriptionManager {
                     };
                     parakeet_engine
                         .transcribe_samples(audio, Some(params))
-                        .map_err(|e| anyhow::anyhow!("Parakeet transcription failed: {}", e))?
+                        .map_err(|e| anyhow::anyhow!("{}", e))?
                 }
                 LoadedEngine::Moonshine(moonshine_engine) => moonshine_engine
                     .transcribe_samples(audio, None)
-                    .map_err(|e| anyhow::anyhow!("Moonshine transcription failed: {}", e))?,
+                    .map_err(|e| anyhow::anyhow!("{}", e))?,
             }
         };
 

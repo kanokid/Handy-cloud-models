@@ -97,9 +97,9 @@ pub fn unregister_shortcut(app: &AppHandle, binding: ShortcutBinding) -> Result<
 
 #[derive(Serialize, Type)]
 pub struct BindingResponse {
-    success: bool,
-    binding: Option<ShortcutBinding>,
-    error: Option<String>,
+    pub success: bool,
+    pub binding: Option<ShortcutBinding>,
+    pub error: Option<String>,
 }
 
 #[tauri::command]

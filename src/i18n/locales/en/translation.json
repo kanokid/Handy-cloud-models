@@ -51,6 +51,22 @@
       "moonshine-base": {
         "name": "Moonshine Base",
         "description": "Very fast, English only. Handles accents well."
+      },
+      "gpt-4o-mini-transcribe": {
+        "name": "GPT-4o Mini",
+        "description": "Fast and very affordable cloud transcription."
+      },
+      "gpt-4o-transcribe": {
+        "name": "GPT-4o",
+        "description": "Most accurate cloud transcription."
+      },
+      "whisper-1": {
+        "name": "Whisper 1",
+        "description": "Standard OpenAI Cloud Whisper model."
+      },
+      "whisper-large-v3-turbo": {
+        "name": "Whisper Large V3 Turbo",
+        "description": "OpenAI's latest Whisper model in the cloud."
       }
     },
     "errors": {
@@ -171,7 +187,8 @@
         "output": "Output",
         "transcription": "Transcription",
         "history": "History",
-        "experimental": "Experimental"
+        "experimental": "Experimental",
+        "cloud": "Cloud Configuration"
       },
       "experimentalToggle": {
         "label": "Experimental Features",
