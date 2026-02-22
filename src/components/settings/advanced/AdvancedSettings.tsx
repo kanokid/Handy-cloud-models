@@ -17,6 +17,8 @@ import { RecordingRetentionPeriodSelector } from "../RecordingRetentionPeriod";
 import { ExperimentalToggle } from "../ExperimentalToggle";
 import { OpenAIApiKey } from "../OpenAIApiKey";
 import { OpenAIBaseUrl } from "../OpenAIBaseUrl";
+import { NovaApiKey } from "../NovaApiKey";
+import { NovaBaseUrl } from "../NovaBaseUrl";
 import { useSettings } from "../../../hooks/useSettings";
 import { KeyboardImplementationSelector } from "../debug/KeyboardImplementationSelector";
 
@@ -55,6 +57,8 @@ export const AdvancedSettings: React.FC = () => {
       <SettingsGroup title={t("settings.advanced.groups.cloud")}>
         <OpenAIApiKey descriptionMode="tooltip" grouped={true} />
         <OpenAIBaseUrl descriptionMode="tooltip" grouped={true} />
+        <NovaApiKey descriptionMode="tooltip" grouped={true} />
+        <NovaBaseUrl descriptionMode="tooltip" grouped={true} />
       </SettingsGroup>
 
       <SettingsGroup title={t("settings.advanced.groups.history")}>

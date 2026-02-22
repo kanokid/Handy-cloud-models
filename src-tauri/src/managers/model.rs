@@ -281,6 +281,25 @@ impl ModelManager {
             },
         );
 
+        available_models.insert(
+            "nova-3".to_string(),
+            ModelInfo {
+                id: "nova-3".to_string(),
+                name: "Nova-3".to_string(),
+                description: "Deepgram Nova-3 - Fastest and most accurate.".to_string(),
+                filename: "".to_string(),
+                url: None,
+                size_mb: 0,
+                is_downloaded: true,
+                is_downloading: false,
+                partial_size: 0,
+                is_directory: false,
+                engine_type: EngineType::Cloud,
+                accuracy_score: 0.95,
+                speed_score: 0.95,
+            },
+        );
+
         let manager = Self {
             app_handle: app_handle.clone(),
             models_dir,

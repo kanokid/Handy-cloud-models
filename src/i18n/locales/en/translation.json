@@ -263,6 +263,14 @@
       "openai_base_url": {
         "label": "OpenAI Base URL",
         "description": "Base URL for the OpenAI-compatible transcription API."
+      },
+      "nova_api_key": {
+        "label": "Deepgram API Key",
+        "description": "Required for Nova-3 cloud transcription."
+      },
+      "nova_base_url": {
+        "label": "Deepgram Base URL",
+        "description": "Base URL for the Deepgram OpenAI-compatible transcription API."
       }
     },
     "postProcessing": {

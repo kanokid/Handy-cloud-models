@@ -67,9 +67,7 @@ const DEFAULT_AUDIO_DEVICE: AudioDevice = {
   is_default: true,
 };
 
-const settingUpdaters: {
-  [K in keyof Settings]?: (value: Settings[K]) => Promise<unknown>;
-} = {
+const settingUpdaters: Record<string, (value: any) => Promise<unknown>> = {
   always_on_microphone: (value) =>
     commands.updateMicrophoneMode(value as boolean),
   audio_feedback: (value) =>
@@ -131,6 +129,10 @@ const settingUpdaters: {
     commands.changeOpenaiApiKeySetting(value as string),
   openai_base_url: (value) =>
     commands.changeOpenaiBaseUrlSetting(value as string),
+  nova_api_key: (value) =>
+    (commands as any).changeNovaApiKeySetting(value as string),
+  nova_base_url: (value) =>
+    (commands as any).changeNovaBaseUrlSetting(value as string),
 };
 
 export const useSettingsStore = create<SettingsStore>()(

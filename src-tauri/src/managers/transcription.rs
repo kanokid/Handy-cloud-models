@@ -386,8 +386,16 @@ impl TranscriptionManager {
         // Check if we should use cloud transcription
         if let Some(model_info) = self.model_manager.get_model_info(&settings.selected_model) {
             if matches!(model_info.engine_type, EngineType::Cloud) {
-                let api_key = settings.openai_api_key.clone();
-                let base_url = settings.openai_base_url.clone();
+                let api_key = if settings.selected_model.starts_with("nova-") {
+                    settings.nova_api_key.clone()
+                } else {
+                    settings.openai_api_key.clone()
+                };
+                let base_url = if settings.selected_model.starts_with("nova-") {
+                    settings.nova_base_url.clone()
+                } else {
+                    settings.openai_base_url.clone()
+                };
                 let model_id = settings.selected_model.clone();
 
                 let result_text = tauri::async_runtime::block_on(async {

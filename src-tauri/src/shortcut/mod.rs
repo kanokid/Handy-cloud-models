@@ -950,6 +950,24 @@ pub fn change_openai_base_url_setting(app: AppHandle, base_url: String) -> Resul
 
 #[tauri::command]
 #[specta::specta]
+pub fn change_nova_api_key_setting(app: AppHandle, api_key: String) -> Result<(), String> {
+    let mut settings = settings::get_settings(&app);
+    settings.nova_api_key = api_key;
+    settings::write_settings(&app, settings);
+    Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn change_nova_base_url_setting(app: AppHandle, base_url: String) -> Result<(), String> {
+    let mut settings = settings::get_settings(&app);
+    settings.nova_base_url = base_url;
+    settings::write_settings(&app, settings);
+    Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
 pub fn change_app_language_setting(app: AppHandle, language: String) -> Result<(), String> {
     let mut settings = settings::get_settings(&app);
     settings.app_language = language.clone();

@@ -319,10 +319,18 @@ pub struct AppSettings {
     pub openai_base_url: String,
     #[serde(default)]
     pub openai_api_key: String,
+    #[serde(default = "default_nova_base_url")]
+    pub nova_base_url: String,
+    #[serde(default)]
+    pub nova_api_key: String,
 }
 
 fn default_openai_base_url() -> String {
     "https://api.openai.com/v1".to_string()
+}
+
+fn default_nova_base_url() -> String {
+    "https://api.deepgram.com/v1/openai".to_string()
 }
 
 fn default_model() -> String {
@@ -615,6 +623,8 @@ pub fn get_default_settings() -> AppSettings {
         keyboard_implementation: KeyboardImplementation::default(),
         openai_base_url: default_openai_base_url(),
         openai_api_key: "".to_string(),
+        nova_base_url: default_nova_base_url(),
+        nova_api_key: "".to_string(),
     }
 }
 

@@ -118,32 +118,58 @@ fn initialize_core_logic(app_handle: &AppHandle) {
     // on macOS before the user is ready.
 
     // Initialize the managers
-    let recording_manager = Arc::new(
-        AudioRecordingManager::new(app_handle).expect("Failed to initialize recording manager"),
-    );
-    let model_manager =
-        Arc::new(ModelManager::new(app_handle).expect("Failed to initialize model manager"));
-    let transcription_manager = Arc::new(
-        TranscriptionManager::new(app_handle, model_manager.clone())
-            .expect("Failed to initialize transcription manager"),
-    );
-    let history_manager =
-        Arc::new(HistoryManager::new(app_handle).expect("Failed to initialize history manager"));
+    match AudioRecordingManager::new(app_handle) {
+        Ok(manager) => app_handle.manage(Arc::new(manager)),
+        Err(e) => {
+            log::error!("Failed to initialize recording manager: {}", e);
+            eprintln!("Failed to initialize recording manager: {}", e);
+        }
+    }
 
-    // Add managers to Tauri's managed state
-    app_handle.manage(recording_manager.clone());
-    app_handle.manage(model_manager.clone());
-    app_handle.manage(transcription_manager.clone());
-    app_handle.manage(history_manager.clone());
+    let model_manager = match ModelManager::new(app_handle) {
+        Ok(manager) => {
+            let arc_manager = Arc::new(manager);
+            app_handle.manage(arc_manager.clone());
+            Some(arc_manager)
+        }
+        Err(e) => {
+            log::error!("Failed to initialize model manager: {}", e);
+            eprintln!("Failed to initialize model manager: {}", e);
+            None
+        }
+    };
+
+    if let Some(model_manager) = model_manager {
+        match TranscriptionManager::new(app_handle, model_manager.clone()) {
+            Ok(manager) => app_handle.manage(Arc::new(manager)),
+            Err(e) => {
+                log::error!("Failed to initialize transcription manager: {}", e);
+                eprintln!("Failed to initialize transcription manager: {}", e);
+            }
+        }
+    } else {
+        log::error!("Skipping transcription manager initialization due to missing model manager");
+    }
+
+    match HistoryManager::new(app_handle) {
+        Ok(manager) => app_handle.manage(Arc::new(manager)),
+        Err(e) => {
+            log::error!("Failed to initialize history manager: {}", e);
+            eprintln!("Failed to initialize history manager: {}", e);
+        }
+    }
 
     // Initialize the shortcuts
     shortcut::init_shortcuts(app_handle);
 
     #[cfg(unix)]
     {
-        let signals = Signals::new(&[SIGUSR2]).unwrap();
-        // Set up SIGUSR2 signal handler for toggling transcription
-        signal_handle::setup_signal_handler(app_handle.clone(), signals);
+        if let Ok(signals) = Signals::new(&[SIGUSR2]) {
+            // Set up SIGUSR2 signal handler for toggling transcription
+            signal_handle::setup_signal_handler(app_handle.clone(), signals);
+        } else {
+            log::error!("Failed to initialize signal handler");
+        }
     }
 
     // Apply macOS Accessory policy if starting hidden
@@ -160,49 +186,70 @@ fn initialize_core_logic(app_handle: &AppHandle) {
     // Choose the appropriate initial icon based on theme
     let initial_icon_path = tray::get_icon_path(initial_theme, tray::TrayIconState::Idle);
 
-    let tray = TrayIconBuilder::new()
-        .icon(
-            Image::from_path(
-                app_handle
-                    .path()
-                    .resolve(initial_icon_path, tauri::path::BaseDirectory::Resource)
-                    .unwrap(),
-            )
-            .unwrap(),
-        )
-        .show_menu_on_left_click(true)
-        .icon_as_template(true)
-        .on_menu_event(|app, event| match event.id.as_ref() {
-            "settings" => {
-                show_main_window(app);
-            }
-            "check_updates" => {
-                let settings = settings::get_settings(app);
-                if settings.update_checks_enabled {
-                    show_main_window(app);
-                    let _ = app.emit("check-for-updates", ());
+    let icon_path = app_handle
+        .path()
+        .resolve(
+            &initial_icon_path,
+            tauri::path::BaseDirectory::Resource,
+        );
+
+    match icon_path {
+        Ok(path) => {
+            match Image::from_path(path) {
+                Ok(icon) => {
+                    let tray_builder = TrayIconBuilder::new()
+                        .icon(icon)
+                        .show_menu_on_left_click(true)
+                        .icon_as_template(true)
+                        .on_menu_event(|app, event| match event.id.as_ref() {
+                            "settings" => {
+                                show_main_window(app);
+                            }
+                            "check_updates" => {
+                                let settings = settings::get_settings(app);
+                                if settings.update_checks_enabled {
+                                    show_main_window(app);
+                                    let _ = app.emit("check-for-updates", ());
+                                }
+                            }
+                            "copy_last_transcript" => {
+                                tray::copy_last_transcript(app);
+                            }
+                            "cancel" => {
+                                use crate::utils::cancel_current_operation;
+
+                                // Use centralized cancellation that handles all operations
+                                cancel_current_operation(app);
+                            }
+                            "quit" => {
+                                app.exit(0);
+                            }
+                            _ => {}
+                        });
+
+                    match tray_builder.build(app_handle) {
+                        Ok(tray) => {
+                            app_handle.manage(tray);
+                            // Initialize tray menu with idle state
+                            utils::update_tray_menu(app_handle, &utils::TrayIconState::Idle, None);
+                        },
+                        Err(e) => {
+                            log::error!("Failed to build tray icon: {}", e);
+                            eprintln!("Failed to build tray icon: {}", e);
+                        }
+                    }
+                },
+                Err(e) => {
+                    log::error!("Failed to load tray icon image: {}", e);
+                    eprintln!("Failed to load tray icon image: {}", e);
                 }
             }
-            "copy_last_transcript" => {
-                tray::copy_last_transcript(app);
-            }
-            "cancel" => {
-                use crate::utils::cancel_current_operation;
-
-                // Use centralized cancellation that handles all operations
-                cancel_current_operation(app);
-            }
-            "quit" => {
-                app.exit(0);
-            }
-            _ => {}
-        })
-        .build(app_handle)
-        .unwrap();
-    app_handle.manage(tray);
-
-    // Initialize tray menu with idle state
-    utils::update_tray_menu(app_handle, &utils::TrayIconState::Idle, None);
+        },
+        Err(e) => {
+            log::error!("Failed to resolve tray icon path '{}': {}", initial_icon_path, e);
+            eprintln!("Failed to resolve tray icon path '{}': {}", initial_icon_path, e);
+        }
+    }
 
     // Get the autostart manager and configure based on user setting
     let autostart_manager = app_handle.autolaunch();
@@ -275,6 +322,8 @@ pub fn run() {
         shortcut::change_keyboard_implementation_setting,
         shortcut::change_openai_api_key_setting,
         shortcut::change_openai_base_url_setting,
+        shortcut::change_nova_api_key_setting,
+        shortcut::change_nova_base_url_setting,
         shortcut::get_keyboard_implementation,
         shortcut::handy_keys::start_handy_keys_recording,
         shortcut::handy_keys::stop_handy_keys_recording,
@@ -426,5 +475,10 @@ pub fn run() {
         })
         .invoke_handler(specta_builder.invoke_handler())
         .run(tauri::generate_context!())
+        .map_err(|e| {
+            log::error!("Error while running tauri application: {}", e);
+            eprintln!("Error while running tauri application: {}", e);
+            e
+        })
         .expect("error while running tauri application");
 }
