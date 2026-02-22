@@ -253,6 +253,12 @@ jobs:
           fi
           echo "platform=${patched_platform}" >> $GITHUB_OUTPUT
 
+      - name: Download VAD Model
+        shell: bash
+        run: |
+          mkdir -p src-tauri/resources/models
+          curl -L -o src-tauri/resources/models/silero_vad_v4.onnx https://blob.handy.computer/silero_vad_v4.onnx
+
       - name: Build with Tauri
         uses: tauri-apps/tauri-action@v0
         env:
